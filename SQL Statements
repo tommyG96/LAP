@@ -12,3 +12,6 @@ left join genre g on g.Gen_Id = m.Gen_Id
 left join movie_director md on md.mov_Id = m.mov_Id
 left join person p on p.per_Id = md.per_Id
 where year(m.mov_premiere) BETWEEN '2015' and '2018';
+
+
+https://stackoverflow.com/questions/144283/what-is-the-difference-between-varchar-and-nvarchar
