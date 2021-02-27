@@ -1,2 +1,14 @@
+use movie;
+select * FROM movie
+WHERE mov_premiere between '2001-12-19' and '2016-03-03'
 
-sefsdfsdfsdfsdfsdf
+
+
+
+use movie;
+select concat_ws(' ', m.mov_title_1, m.mov_title_2) as Titel, year(m.mov_premiere) as Jahr, g.gen_name as Genre, concat_ws(' ', p.per_fname, p.per_SecName, p.per_lname) as Regie 
+FROM movie m 
+left join genre g on g.Gen_Id = m.Gen_Id
+left join movie_director md on md.mov_Id = m.mov_Id
+left join person p on p.per_Id = md.per_Id
+where year(m.mov_premiere) BETWEEN '2015' and '2018';
