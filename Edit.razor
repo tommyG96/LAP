@@ -1,0 +1,179 @@
+﻿@page "/edit"
+
+@using DataLibrary
+@using BlazorServer.Models
+@using Microsoft.Extensions.Configuration
+@inject IDataAccess _data
+@inject IConfiguration _config
+@inject NavigationManager UriHelper
+@using Microsoft.AspNetCore.WebUtilities
+
+<h3>Movie</h3>
+
+@*<button class="btn btn-warning" @onclick="UpdateData">Update</button>
+    <br />
+    <br />*@
+
+
+
+@if (movie == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <style>
+        table {
+            font-family: arial, sans-serif;
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        td, th {
+            border: 1px solid #dddddd;
+            text-align: left;
+            padding: 8px;
+        }
+
+        tr:nth-child(even) {
+            background-color: #dddddd;
+        }
+    </style>
+    <br />
+    <br />
+    <label for="Filmtitel">Filmtitel:</label>
+    <input @onchange="@(( args ) => Updatemovie.mov_title_1 = args.Value.ToString())" value="@movie.mov_title_1" type="text" name="Filmtitel" required>
+    <br />
+    <label for="Verleihtitel">Verleihtitel:</label>
+    <input @onchange="@(( args ) => Updatemovie.mov_title_2 = args.Value.ToString())" value="@movie.mov_title_2" type="text" name="Verleihtitel">
+    <br />
+    <label for="Erscheinungsjahr">Erscheinungsdatum:</label>
+    <input @onchange="@(( args ) => Updatemovie.Mov_premiere = Convert.ToDateTime(args.Value))" value="@movie.Mov_premiere.ToString("dd.MM.yyyy")" type="text" name="Erscheinungsjahr" required>
+    <br />
+    @foreach (var g in genre)
+    {
+        if (@movie.Gen_Id == @g.Gen_Id)
+        {
+            <input @onchange="@(( args ) => Updatemovie.Gen_Id = Int32.Parse(args.Value.ToString()))" id="@g.Gen_Id" value="@g.Gen_Id" type="radio" name="Genre" checked>
+            <label for="@g.Gen_Id">@g.Gen_name</label>
+            <br>
+        }
+        else
+        {
+            <input @onchange="@(( args ) => Updatemovie.Gen_Id = Int32.Parse(args.Value.ToString()))" id="@g.Gen_Id" value="@g.Gen_Id" type="radio" name="Genre">
+            <label for="@g.Gen_Id">@g.Gen_name</label>
+            <br>
+        }
+
+    }
+    <button class="btn btn-dark" @onclick="@(async () => await UpdateData(Updatemovie))">Ändern</button>
+    if (dataChanged == true)
+    {
+        <div id="snackbar">Daten wurden geändert!</div>
+    }
+
+
+    @*<h1>@_value1.ToString("dd.MM.yyyy")</h1>
+        <h1>@_value2.ToString("dd.MM.yyyy")</h1>*@
+
+    @*<input @bind="_value" @bind:event="oninput" />*@
+
+    @*<form action="/details">
+            <label for="Start Date">Zeitraum:</label>
+            <input @bind="_value1" class="_value1" type="date" id="_value1" name="startdate" min="1900-01-01">
+            <label for="End Date">   -   </label>
+            <input @bind="_value2" class="_value2" type="date" id="_value2" name="enddate" max="_today">
+            <button class="btn btn-dark">Search</button>
+        </form>*@
+}
+
+
+@code {
+
+    MovieModel movie;
+    MovieModel Updatemovie = new MovieModel();
+    List<MovieGenreEditModel> genre;
+
+
+    private bool dataChanged = false;
+    private DateTime _value1 = new DateTime(2020, 1, 1);
+    private DateTime _value2 = DateTime.Today;
+    private DateTime _today = DateTime.Today;
+    private DateTime premiere;
+    private string queryStart;
+    private string queryEnd;
+    private string queryID;
+
+    // Variablen für jedes Feld
+    //bind Variablenname --> Input Feld wird Variable gebindet
+
+
+    private async Task UpdateData(MovieModel Updatemovie)
+    {
+        string sql = "UPDATE movie SET mov_title_1 = @mov_title_1, mov_title_2 = @mov_title_2, mov_premiere = @Mov_premiere, Gen_Id = @Gen_Id WHERE mov_Id = @mov_Id";
+
+        await _data.SaveData(sql, new { mov_title_1 = Updatemovie.mov_title_1, mov_title_2 = Updatemovie.mov_title_2, Mov_premiere = Updatemovie.Mov_premiere, Gen_Id = Updatemovie.Gen_Id, mov_Id = Updatemovie.mov_Id }, _config.GetConnectionString("default"));
+        dataChanged = true;
+        //await OnInitializedAsync();
+    }
+
+    private async Task SearchData(string ID)
+    {
+        string sql = "select * from movie where @mov_Id = mov_Id";
+        //string sql = "select * from movie where mov_premiere BETWEEN '20000101' and '20200101'";
+
+        movie = await _data.LoadSingleRow<MovieModel, dynamic>(sql, new { mov_Id = ID }, _config.GetConnectionString("default"));
+
+        //foreach (var m in movie)
+        //{
+        //    Console.Out.WriteLine(m.Mov_premiere);
+        //}
+    }
+
+    private async Task LoadAllGenre()
+    {
+        string sql = "select * from genre";
+        //string sql = "select * from movie where mov_premiere BETWEEN '20000101' and '20200101'";
+
+        genre = await _data.LoadData<MovieGenreEditModel, dynamic>(sql, new { }, _config.GetConnectionString("default"));
+
+        //foreach (var m in movie)
+        //{
+        //    Console.Out.WriteLine(m.Mov_premiere);
+        //}
+    }
+
+
+
+
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        var uri = UriHelper.ToAbsoluteUri(UriHelper.Uri);
+
+        if (QueryHelpers.ParseQuery(uri.Query).TryGetValue("MovieID", out var param))
+        {
+            queryID = param.First();
+        }
+
+        await SearchData(queryID);
+        await LoadAllGenre();
+
+        Updatemovie = movie;
+
+
+
+
+
+
+        //string sql = "select * from movie";
+
+        //movie = await _data.LoadData<MovieModel, dynamic>(sql, new { }, _config.GetConnectionString("default"));
+        //foreach (var m in movie)
+        //{
+        //    Console.Out.WriteLine(m.Mov_premier);
+        //}
+    }
+
+}
