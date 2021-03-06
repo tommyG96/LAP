@@ -1,0 +1,152 @@
+﻿@page "/details"
+
+@using DataLibrary
+@using BlazorServer.Models
+@using Microsoft.Extensions.Configuration
+@inject IDataAccess _data
+@inject IConfiguration _config
+@inject NavigationManager UriHelper
+@using Microsoft.AspNetCore.WebUtilities
+
+<h3>Movie</h3>
+
+@if (details == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <style>
+        table {
+            font-family: arial, sans-serif;
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        td, th {
+            border: 1px solid #dddddd;
+            text-align: left;
+            padding: 8px;
+        }
+
+        tr:nth-child(even) {
+            background-color: #dddddd;
+        }
+    </style>
+    <br />
+    <br />
+    <table>
+        <tr>
+            <th>Genre</th>
+            <th>Filmtitel</th>
+            <th>Erscheinungsjahr</th>
+            <th>Regie</th>
+        </tr>
+        @foreach (var d in details)
+        {
+            <tr>
+                <td>
+                    @d.Genre
+                </td>
+                <td>
+                    @d.Titel
+                </td>
+                <td>
+                    @d.Jahr.ToString("yyyy")
+                </td>
+                <td>
+                    @d.Regie
+                </td>
+            </tr>
+        }
+    </table>
+}
+
+
+@code {
+
+    List<MovieDetailsModel> details;
+
+    private DateTime _value1 = new DateTime(2020, 1, 1);
+    private DateTime _value2 = DateTime.Today;
+    private DateTime _today = DateTime.Today;
+    private DateTime premiere;
+    private string queryStart;
+    private string queryEnd;
+    private string queryID;
+
+    // Daten einfügen
+
+    //private async Task InsertData()
+    //{
+    //    string sql = "insert into movie (mov_title_1, mov_title_2, mov_premiere, Gen_Id) values (@mov_title_1, @mov_title_2, @mov_premiere, @Gen_Id);";
+
+    //    await _data.SaveData(sql, new { mov_title_1 = "Harry Potter", mov_title_2 = "Und die Kammer des Schreckens", mov_premiere = "2001-03-17", Gen_Id = "5" }, _config.GetConnectionString("default"));
+    //    await LoadAllData();
+    //    //await OnInitializedAsync();
+    //}
+
+    private async Task SearchData(string from, string to)
+    {
+        string sql = "select concat_ws(' ', m.mov_title_1, m.mov_title_2) as Titel, m.mov_premiere as Jahr, g.gen_name as Genre, md.Regie " +
+                "FROM movie m " +
+                "left join genre g on g.Gen_Id = m.Gen_Id " +
+                "left join(SELECT md.mov_Id, GROUP_CONCAT(DISTINCT concat_ws(' ', p.per_fname, p.per_SecName, p.per_lname) SEPARATOR ', ') as Regie " +
+                "from movie_director md left join person p on p.per_Id = md.per_Id GROUP BY md.mov_Id) md on md.mov_Id = m.mov_Id " +
+                "where m.mov_premiere BETWEEN @datefrom and @dateto order by Genre, Titel";
+
+        details = await _data.LoadData<MovieDetailsModel, dynamic>(sql, new { datefrom = from, dateto = to }, _config.GetConnectionString("default"));
+    }
+
+    private async Task SearchData(string ID)
+    {
+        string sql = "select concat_ws(' ', m.mov_title_1, m.mov_title_2) as Titel, m.mov_premiere as Jahr, g.gen_name as Genre, md.Regie " +
+                "FROM movie m " +
+                "left join genre g on g.Gen_Id = m.Gen_Id " +
+                "left join(SELECT md.mov_Id, GROUP_CONCAT(DISTINCT concat_ws(' ', p.per_fname, p.per_SecName, p.per_lname) SEPARATOR ', ') as Regie " +
+                "from movie_director md left join person p on p.per_Id = md.per_Id GROUP BY md.mov_Id) md on md.mov_Id = m.mov_Id " +
+                "where m.mov_Id = @ID";
+
+        details = await _data.LoadData<MovieDetailsModel, dynamic>(sql, new { ID = ID }, _config.GetConnectionString("default"));
+    }
+
+    private async Task LoadAllData()
+    {
+        string sql = "select * from movie";
+
+        details = await _data.LoadData<MovieDetailsModel, dynamic>(sql, new { }, _config.GetConnectionString("default"));
+    }
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        var uri = UriHelper.ToAbsoluteUri(UriHelper.Uri);
+
+        if (QueryHelpers.ParseQuery(uri.Query).TryGetValue("startdate", out var param))
+        {
+            queryStart = param.First();
+        }
+        if (QueryHelpers.ParseQuery(uri.Query).TryGetValue("enddate", out param))
+        {
+            queryEnd = param.First();
+        }
+
+        if (QueryHelpers.ParseQuery(uri.Query).TryGetValue("MovieID", out param))
+        {
+            queryID = param.First();
+        }
+
+        if (queryID != null)
+        {
+            await SearchData(queryID);
+        }
+        else if (queryStart == null && queryEnd == null)
+        {
+            await LoadAllData();
+        }
+        else
+        {
+            await SearchData(queryStart, queryEnd);
+        }
+    }
+}
