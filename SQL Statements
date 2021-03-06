@@ -1,17 +1,58 @@
+// DB für SQL abfragen verwenden
+
 use movie;
+
+// alle Tabellen Attribute ausgeben lassen, für die Filme die zwischen Zeitraum x-y erschienen sind
+
 select * FROM movie
 WHERE mov_premiere between '2001-12-19' and '2016-03-03'
 
 
+// Attribute aus verschiedenen Tabellen ausgeben lassen, mit left join
+// Vergleich von PK und FK der beiden Tabellen
 
-
-use movie;
 select concat_ws(' ', m.mov_title_1, m.mov_title_2) as Titel, year(m.mov_premiere) as Jahr, g.gen_name as Genre, concat_ws(' ', p.per_fname, p.per_SecName, p.per_lname) as Regie 
 FROM movie m 
 left join genre g on g.Gen_Id = m.Gen_Id
 left join movie_director md on md.mov_Id = m.mov_Id
 left join person p on p.per_Id = md.per_Id
 where year(m.mov_premiere) BETWEEN '2015' and '2018';
+
+
+// erweiterte Ausgabe 
+// group by --> z.B.: falls mehrere Personen an einem Film gearbeitet haben, dann soll der Film nur 1x ausgegeben werden und
+// der 2. Regisseur soll mit einem Beistrich beim 1x dazugeschrieben werden
+// weiters soll noch nach Genre und dann nach Titel sortiert werden
+
+select concat_ws(' ', m.mov_title_1, m.mov_title_2) as Titel, year(m.mov_premiere) as Jahr, g.gen_name as Genre, md.Regie 
+FROM movie m 
+left join genre g on g.Gen_Id = m.Gen_Id
+left join (SELECT md.mov_Id, GROUP_CONCAT(DISTINCT concat_ws(' ', p.per_fname, p.per_SecName, p.per_lname) SEPARATOR ', ') as Regie
+from movie_director md
+left join person p on p.per_Id = md.per_Id
+GROUP BY md.mov_Id) md on md.mov_Id = m.mov_Id
+where year(m.mov_premiere) BETWEEN '2001' and '2018'
+order by Genre, Titel;
+and concat_ws(' ', m.mov_title_1, m.mov_title_2) like '%RINGE%'
+order by Genre, Titel;
+
+// update diverse Attribute einer Tabelle, wo eine bestimmte Bedingung erfüllt ist (z.B.: PK den Wert 1 hat)
+
+UPDATE movie
+SET mov_title_1 = 'Maria Stuart', mov_title_2 ='Königin von Schottland', mov_premiere ='2001-03-03', Gen_Id = '5'
+WHERE mov_Id = '4';
+
+
+// einen Datensatz in eine Tabelle einfügen
+
+Insert into movie (mov_title_1, mov_title_2, mov_premiere, gen_Id)
+VALUES ('Harry Potter', 'Und der Stein der Weisen', '2001-05-19', 4);
+
+
+// ein Datensatz soll aus einer Tabelle gelöscht werden
+
+delete from movie where mov_Id = 5
+
 
 
 https://stackoverflow.com/questions/144283/what-is-the-difference-between-varchar-and-nvarchar
