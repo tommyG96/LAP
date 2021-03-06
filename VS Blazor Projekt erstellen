@@ -1,0 +1,27 @@
+Neues Projekt erstellen
+Blazor App "BlazorServer" --> Solution Name "LAP..."
+Rechtsklick aus 'Solution' --> Add --> New Project --> Class Library (.Net Standard) --> "DataLibrary" (netstandard2.0)!!! wichtig
+Class1.cs löschen
+Rechtsklick auf 'Dependencies' UNTEN ---> Manage NuGet Packages ---> Dapper + MySql.Data
+Rechtsklick aus 'DataLibrary' ---> Add ---> New Class ---> "DataAccess"
+2 Methoden in DataAccess erstellen (LoadData + SaveData)  
+Rechtsklick auf 'Dependencies' OBEN ---> Add Project Referrence... ---> "DataLibrary" anhackerln
+Rechtsklick auf Pages ---> Add ---> Razor Component... ---> Movie,People....
+Zu DataAccess wechseln ---> DataAccess markieren Strg+. drücken ---> Extract interface... ---> IDataAccess ---> OK
+In "Startup.cs" zu "ConfigureServices" gehen und folgendes hinzufügen: services.AddSingleton<IDataAccess, DataAccess>();
+Zu Movie,People.... wechseln ---> @using DataLibrary einfügen 
+@inject IDataAccess _data
+Recktsklick auf "BlazorServer" ---> Add ---> Folder Models
+Rechtsklick auf Model ---> Add Class ---> Movie-, PersonModel
+Für alle Attribute ein "Property" erstellen (z.B.: public int mov_Id, public string mov_title_1, etc...)
+Zu Movie,People.... wechseln ---> @using BlazorServer.Models hinzufügen 
+im @code Teil folgendes hinzufügen: List<Movie-,PersonModel> movie, person;
+@using Microsoft.Extensions.Configuration
+@inject IConfiguration _config
+Zu appsettings.json wechseln ---> folgendes hinzufügen: "AllowedHosts": "*", 
+"ConnectionStrings": {
+"default": "Server=127.0.0.1;Port=3306;database=movie;user id=root;password=''"
+}
+
+
+
