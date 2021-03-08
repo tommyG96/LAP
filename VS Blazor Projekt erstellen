@@ -18,6 +18,8 @@ Zu Movie,People.... wechseln ---> @using BlazorServer.Models hinzufügen
 im @code Teil folgendes hinzufügen: List<Movie-,PersonModel> movie, person;
 @using Microsoft.Extensions.Configuration
 @inject IConfiguration _config
+@inject NavigationManager UriHelper
+@using Microsoft.AspNetCore.WebUtilities
 Zu appsettings.json wechseln ---> folgendes hinzufügen: "AllowedHosts": "*", 
 "ConnectionStrings": {
 "default": "Server=127.0.0.1;Port=3306;database=movie;user id=root;password=''"
