@@ -1,4 +1,6 @@
-﻿using System;
+// Variablennamen müssen, die selben sein wie in der SQL Abfrage!!!!
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
