@@ -8,7 +8,7 @@ Rechtsklick aus 'DataLibrary' ---> Add ---> New Class ---> "DataAccess"
 Rechtsklick auf 'Dependencies' OBEN ---> Add Project Referrence... ---> "DataLibrary" anhackerln
 Rechtsklick auf Pages ---> Add ---> Razor Component... ---> Movie,People....
 Zu DataAccess wechseln ---> DataAccess markieren Strg+. drücken ---> Extract interface... ---> IDataAccess ---> OK
-In "Startup.cs" zu "ConfigureServices" gehen und folgendes hinzufügen: services.AddSingleton<IDataAccess, DataAccess>();
+In "Startup.cs" zu "ConfigureServices" gehen und folgendes hinzufügen: services.AddSingleton<IDataAccess, DataAccess>(); ---> Strg + j auf DataAccess auf DataAccess klicken
 Zu Movie,People.... wechseln ---> @using DataLibrary einfügen 
 @inject IDataAccess _data
 Recktsklick auf "BlazorServer" ---> Add ---> Folder Models
