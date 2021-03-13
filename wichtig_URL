@@ -1,0 +1,5 @@
+Beispiel URL: https://localhost:44367/Patientensuche?Patient=1
+Patient kommt aus der Input Form ---> Name=Patient
+
+private string queryPatient
+OnInitializedAsync holt sich dann das Patient aus der Form und schreibt es in die Variable queryPatient
