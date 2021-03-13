@@ -61,6 +61,8 @@ SELECT table_schema, table_name, column_name, ordinal_position, data_type,
   FROM movie 
   WHERE (table_schema='movie' and table_name = 'movie')
   order by ordinal_position;
+  
+describe person;  <--- table_name         FUNKTIONIERT!!
 
 
 
