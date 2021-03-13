@@ -12,7 +12,7 @@ In "Startup.cs" zu "ConfigureServices" gehen und folgendes hinzufügen: services
 Zu Movie,People.... wechseln ---> @using DataLibrary einfügen 
 @inject IDataAccess _data
 Recktsklick auf "BlazorServer" ---> Add ---> Folder Models
-Rechtsklick auf Model ---> Add Class ---> Movie-, PersonModel
+Rechtsklick auf Folder Models ---> Add Class ---> Movie-, PersonModel
 Für alle Attribute ein "Property" erstellen (z.B.: public int mov_Id, public string mov_title_1, etc...)
 Zu Movie,People.... wechseln ---> @using BlazorServer.Models hinzufügen 
 im @code Teil folgendes hinzufügen: List<Movie-,PersonModel> movie, person;
