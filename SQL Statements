@@ -54,11 +54,10 @@ VALUES ('Harry Potter', 'Und der Stein der Weisen', '2001-05-19', 4);
 delete from movie where mov_Id = 5
 
 
-// komplette Tabellenstruktur ausgeben ---> FUNKTIONIERT NOCH NICHT!!!
-
+// komplette Tabellenstruktur ausgeben 
 SELECT table_schema, table_name, column_name, ordinal_position, data_type, 
        numeric_precision, column_type, column_default, is_nullable, column_comment 
-  FROM movie 
+  FROM INFORMATION_SCHEMA.COLUMNS 
   WHERE (table_schema='movie' and table_name = 'movie')
   order by ordinal_position;
   
