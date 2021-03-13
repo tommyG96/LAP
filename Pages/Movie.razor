@@ -1,0 +1,171 @@
+﻿@page "/movie"
+
+@using DataLibrary
+@using BlazorServer.Models
+@using Microsoft.Extensions.Configuration
+@inject IDataAccess _data
+@inject IConfiguration _config
+@inject NavigationManager UriHelper
+@using Microsoft.AspNetCore.WebUtilities
+
+<h3>Movie</h3>
+
+<button class="btn btn-primary" @onclick="InsertData">Insert</button>
+<button class="btn btn-warning" @onclick="UpdateData">Update</button>
+<br />
+<br />
+
+
+
+@if (movie == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <style>
+        table {
+            font-family: arial, sans-serif;
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        td, th {
+            border: 1px solid #dddddd;
+            text-align: left;
+            padding: 8px;
+        }
+
+        tr:nth-child(even) {
+            background-color: #dddddd;
+        }
+    </style>
+    <br />
+    <br />
+    <table>
+        <tr>
+            <th>Movie ID</th>
+            <th>Filmtitel</th>
+            <th>Filmtitel 2</th>
+            <th>Filmpremiere</th>
+            <th>Genre ID</th>
+            <th>Details</th>
+        </tr>
+        @foreach (var m in movie)
+        {
+    <tr>
+        <td>
+            @m.mov_Id
+        </td>
+        <td>
+            @m.mov_title_1
+        </td>
+        <td>
+            @m.mov_title_2
+        </td>
+        <td>
+            @m.Mov_premiere.ToString("dd.MM.yyyy")
+        </td>
+        <td>
+            @m.Gen_Id
+        </td>
+        <td>
+
+            <a class="btn btn-dark" href="@("/details?MovieID="+m.mov_Id.ToString())">Details</a>
+
+        </td>
+        <td>
+
+            <button class="btn btn-danger" @onclick="@(async () => await DeleteData(m.mov_Id))">Delete</button>
+
+        </td>
+    </tr>
+        }
+    </table>
+
+    <br />
+    <br />
+    <form action="/details">
+        <label for="Start Date">Zeitraum:</label>
+        <input @bind="_value1" class="_value1" type="date" id="_value1" name="startdate" min="1900-01-01">
+        <label for="End Date">   -   </label>
+        <input @bind="_value2" class="_value2" type="date" id="_value2" name="enddate" max="_today">
+        <button class="btn btn-dark">Search</button>
+    </form>
+}
+
+
+@code {
+
+    List<MovieModel> movie;
+
+    private DateTime _value1 = new DateTime(2020, 1, 1);
+    private DateTime _value2 = DateTime.Today;
+    private DateTime _today = DateTime.Today;
+    private DateTime premiere;
+    private string queryStart;
+    private string queryEnd;
+    private string queryID;
+
+    private async Task InsertData()
+    {
+        string sql = "insert into movie (mov_title_1, mov_title_2, mov_premiere, Gen_Id) values (@mov_title_1, @mov_title_2, @mov_premiere, @Gen_Id);";
+
+        await _data.SaveData(sql, new { mov_title_1 = "Harry Potter", mov_title_2 = "Und die Kammer des Schreckens", mov_premiere = "2001-03-17", Gen_Id = "5" }, _config.GetConnectionString("default"));
+        await LoadAllData();
+    }
+
+    private async Task UpdateData()
+    {
+        string sql = "update movie set mov_title_1 = @mov_title_1 where mov_title_2 = @mov_title_2";
+
+        await _data.SaveData(sql, new { mov_title_1 = "Maaaaria Stuart", mov_title_2 = "Königin von Schottland" }, _config.GetConnectionString("default"));
+        await LoadAllData();
+    }
+
+    private async Task DeleteData(int movie_Id)
+    {
+        string sql = "delete from movie where mov_Id = @mov_Id";
+
+        await _data.SaveData(sql, new { mov_Id = movie_Id }, _config.GetConnectionString("default"));
+        await LoadAllData();
+    }
+
+    private async Task SearchData(string from, string to)
+    {
+        string sql = "select * from movie where mov_premiere BETWEEN @datefrom and @dateto";
+
+        movie = await _data.LoadData<MovieModel, dynamic>(sql, new { datefrom = from, dateto = to }, _config.GetConnectionString("default"));
+    }
+
+    private async Task LoadAllData()
+    {
+        string sql = "select * from movie";
+
+        movie = await _data.LoadData<MovieModel, dynamic>(sql, new { }, _config.GetConnectionString("default"));
+    }
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        var uri = UriHelper.ToAbsoluteUri(UriHelper.Uri);
+
+        if (QueryHelpers.ParseQuery(uri.Query).TryGetValue("startdate", out var param))
+        {
+            queryStart = param.First();
+        }
+        if (QueryHelpers.ParseQuery(uri.Query).TryGetValue("enddate", out param))
+        {
+            queryEnd = param.First();
+        }
+
+        if (queryStart == null && queryEnd == null)
+        {
+            await LoadAllData();
+        }
+        else
+        {
+            await SearchData(queryStart, queryEnd);
+        }
+    }
+}
