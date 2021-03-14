@@ -4,7 +4,11 @@ MySQL Workbench: https://dev.mysql.com/downloads/workbench/
 
 MySQL Connector: https://dev.mysql.com/downloads/installer/
 
-Visual Studio: https://visualstudio.microsoft.com/de/vs/
+Visual Studio: https://visualstudio.microsoft.com/de/vs/ 
+---> Web und Cloud --> ASP.NET und Webentwicklung
+---> Andere Toolsets --> Datenspicherung und -verarbeitung
+---> Andere Toolsets --> Plattformübergreifende .NET Core-Entwicklung
+
 
 NuGet: Dapper + MySQL.data
 
